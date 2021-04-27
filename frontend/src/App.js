@@ -16,7 +16,6 @@ import { AuthContext } from "./shared/context/AuthContext";
 
 const App = () => {
   const { isLogin } = useContext(AuthContext);
- console.log(isLogin)
   let routes;
   if (isLogin) {
     routes = (

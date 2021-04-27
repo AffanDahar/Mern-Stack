@@ -39,13 +39,14 @@ const signUp = async (req, res, next) => {
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res ,next) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (!user || !(await user.matchPassword(password))) {
-    throw new HttpError("invalid email or password", 400);
+    const error = new HttpError("invalid email or password", 400);
+    return next(error)
   }
 
   res.json({
