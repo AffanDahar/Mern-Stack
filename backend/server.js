@@ -1,10 +1,17 @@
 const express = require("express");
+const dotenv = require('dotenv')
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const PlacesRoutes = require("./routes/placesRoutes");
+const UserRoutes = require('./routes/userRoutes')
+const connectDB = require('./config/db')
+dotenv.config()
+connectDB()
 const app = express();
+
 
 app.use(express.json());
 app.use("/api/places", PlacesRoutes);
+app.use("/api/user", UserRoutes);
 app.use(notFound);
 app.use(errorHandler);
 const PORT = 5000;
