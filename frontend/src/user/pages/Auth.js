@@ -2,8 +2,8 @@ import React, { useContext, useState } from "react";
 import Button from "../../shared/components/FormElements/Button";
 import Input from "../../shared/components/FormElements/Input";
 import Card from "../../shared/components/UIElements/Card";
-import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner'
-import ErrorModal from '../../shared/components/UIElements/ErrorModal'
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import { AuthContext } from "../../shared/context/AuthContext";
 import { useForm } from "../../shared/hooks/form-hook";
 import {
@@ -12,10 +12,11 @@ import {
   VALIDATOR_REQUIRE,
 } from "../../shared/util/validators";
 import "./Auth.css";
+import { useHttpClient } from "../../shared/hooks/http-hook";
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false)
-  const [error, setError]  = useState(null)
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+
   const { Login } = useContext(AuthContext);
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -57,115 +58,91 @@ const Auth = () => {
 
   const inputSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (isLogin) {
-      setLoading(true)
       try {
-        const response = await fetch("http://localhost:5000/api/user/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        await sendRequest(
+          "http://localhost:5000/api/users/login",
+          "POST",
+          JSON.stringify({
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
           }),
-        });
-        const data = await response.json();
-        if(!response.ok){
-          throw  new Error(data.message)
-        }
+          {
+            "Content-Type": "application/json",
+          }
+        );
         Login();
-        setLoading(false)
-      } catch (err) {
-        console.log(err)
-        setError(err.message)
-        setLoading(false)
-      }
-
-
+      } catch (err) {}
     } else {
       try {
-        const response = await fetch("http://localhost:5000/api/user/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        await sendRequest(
+          "http://localhost:5000/api/users/signup",
+          "POST",
+          JSON.stringify({
             name: formState.inputs.name.value,
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
           }),
-        });
-        const data = await response.json();
-        if(!response.ok){
-          throw  new Error(data.message)
-        }
-        console.log(data);
+          {
+            "Content-Type": "application/json",
+          }
+        );
+
         Login();
-        setLoading(false)
-      } catch (err) {
-        setError(err.message)
-        setLoading(false)
-       }
+      } catch (err) {}
     }
-  
   };
 
-  const  errorHanddlerr  = () => {
-    setError(null)
-  }
   return (
     <>
-    <ErrorModal error={error} onClear={errorHanddlerr}/>
-    
-   
-    <Card className="authentication">
-    {loading && <LoadingSpinner/>} 
-      <h1>Login Required</h1>
+      <ErrorModal error={error} onClear={clearError} />
 
-      <hr />
-      <form type="submit" onSubmit={inputSubmit}>
-        {!isLogin && (
+      <Card className="authentication">
+        {isLoading && <LoadingSpinner />}
+        <h1>Login Required</h1>
+
+        <hr />
+        <form type="submit" onSubmit={inputSubmit}>
+          {!isLogin && (
+            <Input
+              id="name"
+              onInput={inputHandler}
+              element="input"
+              type="text"
+              label="Name"
+              validators={[VALIDATOR_REQUIRE()]}
+              errorText="Please enter a name"
+            />
+          )}
           <Input
-            id="name"
+            id="email"
             onInput={inputHandler}
             element="input"
             type="text"
-            label="Name"
-            validators={[VALIDATOR_REQUIRE()]}
-            errorText="Please enter a name"
+            label="Email"
+            validators={[VALIDATOR_EMAIL()]}
+            errorText="Please enter a valid email."
           />
-        )}
-        <Input
-          id="email"
-          onInput={inputHandler}
-          element="input"
-          type="text"
-          label="Email"
-          validators={[VALIDATOR_EMAIL()]}
-          errorText="Please enter a valid email."
-        />
-        <Input
-          id="password"
-          onInput={inputHandler}
-          element="input"
-          type="text"
-          label="Password"
-          validators={[VALIDATOR_MINLENGTH(8)]}
-          errorText="Please enter a valid description (at least 8 characters)"
-        />
-        <Button type="submit" disabled={!formState.isValid}>
-          {isLogin  ? 'Login' : 'Sign up'}
+          <Input
+            id="password"
+            onInput={inputHandler}
+            element="input"
+            type="text"
+            label="Password"
+            validators={[VALIDATOR_MINLENGTH(8)]}
+            errorText="Please enter a valid description (at least 8 characters)"
+          />
+          <Button type="submit" disabled={!formState.isValid}>
+            {isLogin ? "Login" : "Sign up"}
+          </Button>
+        </form>
+        <Button inverse onClick={switchHandler}>
+          {isLogin ? "Switch to Sign Up" : "Switch to Login"}
         </Button>
-      </form>
-      <Button inverse onClick={switchHandler}>
-        {isLogin ? "Switch to Sign Up" : "Switch to Login"}
-      </Button>
-    </Card>
-</>
+      </Card>
+    </>
   );
-
 };
 
 export default Auth;
