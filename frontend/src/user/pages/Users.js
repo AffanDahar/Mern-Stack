@@ -7,28 +7,25 @@ import UsersList from "../components/UsersList";
 
 const Users = () => {
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
-  
   const [loadedUsers, setLoadedUsers] = useState();
-  
+
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);
       try {
-        const res = await sendRequest("http://localhost:5000/api/user");
-        const data = await res.json();
+        const responseData = await sendRequest(
+          'http://localhost:5000/api/user'
+        );
 
-        setLoadedUsers(data.users);
+        setLoadedUsers(responseData.users);
       } catch (err) {}
     };
-
     fetchUsers();
   }, [sendRequest]);
-
   
   return (
     <>
       {error && <ErrorModal error={error} onClear={clearError} />}
-      {loading && (
+      {isLoading && (
         <div className="center">
           <LoadingSpinner />
         </div>

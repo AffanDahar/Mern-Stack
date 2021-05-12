@@ -61,8 +61,8 @@ const Auth = () => {
 
     if (isLogin) {
       try {
-        await sendRequest(
-          "http://localhost:5000/api/users/login",
+        const responseData = await sendRequest(
+          "http://localhost:5000/api/user/login",
           "POST",
           JSON.stringify({
             email: formState.inputs.email.value,
@@ -72,12 +72,12 @@ const Auth = () => {
             "Content-Type": "application/json",
           }
         );
-        Login();
+        Login(responseData);
       } catch (err) {}
     } else {
       try {
         await sendRequest(
-          "http://localhost:5000/api/users/signup",
+          "http://localhost:5000/api/user/signup",
           "POST",
           JSON.stringify({
             name: formState.inputs.name.value,

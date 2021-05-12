@@ -6,7 +6,7 @@ const {protect} = require('../middleware/authMiddleware')
 
 const {getPlaceById  , createPlace , updatePlace , deletePlace , findPlacesByUserId} =  require('../controllers/placesController')
 
-router.route('/users').get(protect,findPlacesByUserId)
+router.route('/user/:uid').get(findPlacesByUserId)
 router.get('/:pid',  getPlaceById )
 router.post('/', protect, [
   check('title').not().isEmpty(),

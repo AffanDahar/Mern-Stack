@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext} from "react";
 
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
@@ -8,9 +8,18 @@ import {
 } from "../../shared/util/validators";
 import "./Place.css";
 import { useForm } from "../../shared/hooks/form-hook";
+import { AuthContext } from "../../shared/context/AuthContext";
+import { useHttpClient } from "../../shared/hooks/http-hook";
+import { useHistory } from "react-router";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 
 const NewPlace = () => {
+
+  const {user } = useContext(AuthContext)
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+  console.log(user.id)
 const [formState , inputHandler]=  useForm(
     {
       title: {
@@ -30,13 +39,33 @@ const [formState , inputHandler]=  useForm(
   );
 
 
-  const inputSubmit = (e) => {
-    e.preventDefault();
-    console.log(formState.inputs);
-   
+  const history = useHistory();
+
+  const inputSubmit = async event => {
+    event.preventDefault();
+    try {
+      await sendRequest(
+        'http://localhost:5000/api/places',
+        'POST',
+        JSON.stringify({
+          title: formState.inputs.title.value,
+          description: formState.inputs.description.value,
+          address: formState.inputs.address.value,
+          
+        }),
+        { 'Content-Type': 'application/json',
+        Authorization: `Bearer ${user.id}`
+      }
+      );
+      history.push('/');
+    } catch (err) {}
   };
+
   return (
+    <>
+    <ErrorModal error={error} onClear={clearError} />
     <form className="place-form" onSubmit={inputSubmit}>
+    {isLoading && <LoadingSpinner asOverlay />}
       <Input
         id="title"
         element="input"
@@ -69,6 +98,7 @@ const [formState , inputHandler]=  useForm(
         ADD PLACE
       </Button>
     </form>
+  </>
   );
 };
 
